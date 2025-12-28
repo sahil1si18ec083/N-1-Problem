@@ -6,15 +6,26 @@ import (
 )
 
 func SeedData(db *sql.DB) {
+	deleteuserQuery := `Delete Table IF EXISTS users`
+	_, err := db.Exec(deleteuserQuery)
+	if err != nil {
+		fmt.Errorf("Error while deleting user table")
+	}
 	query := `CREATE TABLE IF NOT EXISTS users (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT,
 	email TEXT,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`
-	_, err := db.Exec(query)
+	_, err = db.Exec(query)
 	if err != nil {
 		fmt.Errorf("Error while creating user table")
+	}
+
+	deletepostQuery := `Delete Table IF EXISTS posts`
+	_, err = db.Exec(deletepostQuery)
+	if err != nil {
+		fmt.Errorf("Error while deleting post table")
 	}
 	query_posts := `CREATE Table IF NOT EXISTS posts (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,7 +91,8 @@ func SeedData(db *sql.DB) {
 ('User47', 'user47@gmail.com'),
 ('User48', 'user48@gmail.com'),
 ('User49', 'user49@gmail.com'),
-('User50', 'user50@gmail.com');`
+('User50', 'user50@gmail.com'),
+('User51', 'user51@gmail.com');`
 	_, err = db.Exec(query_insert_users)
 	if err != nil {
 		fmt.Errorf("Error while creating user table")

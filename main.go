@@ -20,18 +20,17 @@ type UserResponse struct {
 	Posts []PostResponse `json:"posts"`
 }
 type JoinResponse struct {
-	UserId int64  `json:"userId"`
-	Email  string `json:"email"`
-	PostId int64  `json:"postId"`
-	Title  string `json:"title"`
-	Body   string `json:"body"`
-	Name   string `json:"name"`
+	UserId int64          `json:"userId"`
+	Email  string         `json:"email"`
+	PostId sql.NullInt64  `json:"postId"`
+	Title  sql.NullString `json:"title"`
+	Body   sql.NullString `json:"body"`
+	Name   sql.NullString `json:"name"`
 }
 
 func main() {
 	totalQueries := 0
 	var allusers []UserResponse
-	var alljoinResponse []JoinResponse
 
 	db, err := sql.Open("sqlite3", "app.db")
 
@@ -40,13 +39,10 @@ func main() {
 	}
 	defer db.Close()
 
-	// SeedData(db)
+	SeedData(db)
 
 	// FetchUsersWithPostsNPlusOne(&allusers, db, &totalQueries)
-	FetchUsersWithPostsOptimized(&allusers, db, &totalQueries, &alljoinResponse)
-	// for _, val := range allusers {
-	// 	fmt.Println(val)
-	// }
+	FetchUsersWithPostsOptimized(&allusers, db, &totalQueries)
 	sort.Slice(allusers, func(i, j int) bool {
 		return allusers[i].Id < allusers[j].Id
 	})

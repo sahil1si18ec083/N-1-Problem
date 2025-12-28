@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 )
 
 func FetchUsersWithPostsNPlusOne(allusers *[]UserResponse, db *sql.DB, totalQueries *int) {
@@ -10,6 +9,7 @@ func FetchUsersWithPostsNPlusOne(allusers *[]UserResponse, db *sql.DB, totalQuer
 	*totalQueries++
 	rows, err := db.Query(query)
 	if err != nil {
+
 		panic(err)
 	}
 	defer rows.Close()
@@ -17,6 +17,7 @@ func FetchUsersWithPostsNPlusOne(allusers *[]UserResponse, db *sql.DB, totalQuer
 		var u UserResponse
 		err = rows.Scan(&u.Id, &u.Email, &u.Name)
 		if err != nil {
+
 			panic(err)
 		}
 		var allposts []PostResponse
@@ -33,6 +34,7 @@ func GetAllPosts(db *sql.DB, allposts *[]PostResponse, id int64, totalQueries *i
 	*totalQueries++
 	rows, err := db.Query(query, id)
 	if err != nil {
+
 		panic(err)
 	}
 	defer rows.Close()
@@ -40,6 +42,7 @@ func GetAllPosts(db *sql.DB, allposts *[]PostResponse, id int64, totalQueries *i
 		var p PostResponse
 		err = rows.Scan(&p.Title, &p.Body, &p.Id)
 		if err != nil {
+
 			panic(err)
 		}
 
@@ -47,9 +50,9 @@ func GetAllPosts(db *sql.DB, allposts *[]PostResponse, id int64, totalQueries *i
 	}
 }
 
-func FetchUsersWithPostsOptimized(allusers *[]UserResponse, db *sql.DB, totalQueries *int,
-	alljoinResponse *[]JoinResponse) {
+func FetchUsersWithPostsOptimized(allusers *[]UserResponse, db *sql.DB, totalQueries *int) {
 	resultmap := make(map[int64]UserResponse)
+	*totalQueries++
 	joinQuery := `
 	Select U.id as userId, U.Email as email, P.id as PostId, P.title as title, P.body as body, U.Name as Name  from users as U left join posts as P on U.id = p.userId order by U.id
 	`
@@ -61,20 +64,21 @@ func FetchUsersWithPostsOptimized(allusers *[]UserResponse, db *sql.DB, totalQue
 	for rows.Next() {
 		var j JoinResponse
 		err = rows.Scan(&j.UserId, &j.Email, &j.PostId, &j.Title, &j.Body, &j.Name)
-		fmt.Println(j.UserId)
+
 		if err != nil {
+
 			panic(err)
 		}
-		*alljoinResponse = append(*alljoinResponse, j)
+
 		val, exists := resultmap[j.UserId]
 
 		if !exists {
-			u := UserResponse{Id: j.UserId, Email: j.Email, Name: j.Name}
-			p := PostResponse{Id: j.PostId, Title: j.Title, Body: j.Body}
+			u := UserResponse{Id: j.UserId, Email: j.Email, Name: j.Name.String}
+			p := PostResponse{Id: j.PostId.Int64, Title: j.Title.String, Body: j.Body.String}
 			u.Posts = append(u.Posts, p)
 			resultmap[j.UserId] = u
 		} else {
-			p := PostResponse{Id: j.PostId, Title: j.Title, Body: j.Body}
+			p := PostResponse{Id: j.PostId.Int64, Title: j.Title.String, Body: j.Body.String}
 			val.Posts = append(val.Posts, p)
 			resultmap[j.UserId] = val
 		}
